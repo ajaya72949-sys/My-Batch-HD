@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -28,47 +27,46 @@ jobs:
       run: |
         npm install -g cordova
         cordova create app com.allbatches.app AllBatches
+        cd app
         
-        # Files Copy
-        if [ -f "index.html" ]; then cp index.html app/www/index.html; fi
+        # HTML Copy
+        if [ -f "../index.html" ]; then cp ../index.html www/index.html; fi
         
-        # आपके लोगो फाइल को icon.png बनाना
-        if [ -f "Screenshot_20260815-163955.png" ]; then
-          cp Screenshot_20260815-163955.png app/www/icon.png
+        # Logo and Splash Setup (अगर splash.png नहीं है तो Screenshot वाली फोटो यूज़ होगी)
+        if [ -f "../Screenshot_20260815-163955.png" ]; then 
+          cp ../Screenshot_20260815-163955.png www/icon.png
+          cp ../Screenshot_20260815-163955.png www/splash.png
+        fi
+        if [ -f "../splash.png" ]; then 
+          cp ../splash.png www/splash.png
         fi
         
-        # 4 सेकंड वाली फोटो को splash.png बनाना
-        if [ -f "splash.png" ]; then
-          cp splash.png app/www/splash.png
-        fi
+        # Plugins Setup
+        cordova plugin add cordova-plugin-fullscreen
+        cordova plugin add cordova-plugin-screen-orientation
+        cordova plugin add cordova-plugin-splashscreen
+        cordova platform add android
         
-        # config.xml update
+        # Config.xml Overwrite (Logo Popup + Fullscreen Fix)
         python3 -c '
-        with open("app/config.xml", "r") as f:
+        with open("config.xml", "r") as f:
             content = f.read()
         
-        import re
-        content = re.sub(r"<name>.*?</name>", "<name>All Batches</name>", content)
-        
         extra_config = """    <icon src="www/icon.png" />
-            <platform name="android">
-                <splash src="www/splash.png" density="port-hdpi"/>
-            </platform>
+            <preference name="Fullscreen" value="true" />
+            <preference name="Orientation" value="landscape" />
             <preference name="SplashScreen" value="splash" />
             <preference name="SplashScreenDelay" value="4000" />
             <preference name="AutoHideSplashScreen" value="true" />
             <preference name="FadeSplashScreen" value="true" />
+            <preference name="ShowSplashScreenSpinner" value="false" />
             <preference name="AndroidPostSplashScreenTheme" value="@style/Theme.AppCompat.NoActionBar" />
         """
         content = content.replace("</widget>", extra_config + "</widget>")
         
-        with open("app/config.xml", "w") as f:
+        with open("config.xml", "w") as f:
             f.write(content)
         '
-        
-        cd app
-        cordova platform add android
-        cordova plugin add cordova-plugin-splashscreen
         
         cordova build android --debug
 
