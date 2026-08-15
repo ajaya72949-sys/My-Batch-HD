@@ -32,29 +32,29 @@ jobs:
         # HTML Copy
         if [ -f "../index.html" ]; then cp ../index.html www/index.html; fi
         
-        # Logo and Splash Setup (अगर splash.png नहीं है तो Screenshot वाली फोटो यूज़ होगी)
+        # Logo & Splash Setup
         if [ -f "../Screenshot_20260815-163955.png" ]; then 
           cp ../Screenshot_20260815-163955.png www/icon.png
           cp ../Screenshot_20260815-163955.png www/splash.png
-        fi
-        if [ -f "../splash.png" ]; then 
-          cp ../splash.png www/splash.png
         fi
         
         # Plugins Setup
         cordova plugin add cordova-plugin-fullscreen
         cordova plugin add cordova-plugin-screen-orientation
+        cordova plugin add cordova-plugin-statusbar
         cordova plugin add cordova-plugin-splashscreen
         cordova platform add android
         
-        # Config.xml Overwrite (Logo Popup + Fullscreen Fix)
+        # Config.xml Customization (Default orientation = sensor / portrait)
         python3 -c '
         with open("config.xml", "r") as f:
             content = f.read()
         
         extra_config = """    <icon src="www/icon.png" />
             <preference name="Fullscreen" value="true" />
-            <preference name="Orientation" value="landscape" />
+            <preference name="Orientation" value="sensor" />
+            <preference name="StatusBarOverlaysWebView" value="true" />
+            <preference name="StatusBarBackgroundColor" value="#000000" />
             <preference name="SplashScreen" value="splash" />
             <preference name="SplashScreenDelay" value="4000" />
             <preference name="AutoHideSplashScreen" value="true" />
@@ -67,7 +67,7 @@ jobs:
         with open("config.xml", "w") as f:
             f.write(content)
         '
-        
+
         cordova build android --debug
 
     - name: Upload APK
