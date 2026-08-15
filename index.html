@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>EdTech Portal Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;min-height:100vh;background:#f4f6f9;color:#333;overflow-x:hidden}
+header{background:#fff;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:100}
+header h1{font-size:15px;color:#2563eb}
+.tab-btn{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:6px 10px;border-radius:5px;cursor:pointer;margin-left:4px;font-weight:600;font-size:11px}
+.tab-btn.active{background:#2563eb;color:#fff}
+.container{padding:16px 14px;max-width:900px;margin:auto}
+.section{display:none}.section.active{display:block}
+.card,.pro-batch-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 2px 4px #00000008}
+.card{padding:18px;margin-bottom:16px}.card h3{margin-bottom:12px;color:#1e293b;font-size:15px}
+input,select{width:100%;padding:10px;margin-bottom:10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;color:#1e293b;font-size:13px;outline:none}
+.action-btn{width:100%;padding:10px;border:0;border-radius:6px;background:#10b981;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.hero-banner{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:18px;border-radius:12px;margin-bottom:18px}
+.hero-banner h2{font-size:18px;margin-bottom:4px}.hero-banner p{font-size:13px}
+.search-container{position:relative;margin-bottom:18px}.search-input{padding-left:38px;background:#fff;margin:0}
+.search-icon{position:absolute;top:10px;left:14px;z-index:1}
+.section-header{margin-bottom:14px}.section-title{font-size:15px;font-weight:700;color:#1e293b}
+.grid-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.pro-batch-card{padding:14px;cursor:pointer;transition:.2s}.pro-batch-card:hover{transform:translateY(-2px);border-color:#2563eb}
+.batch-banner-img{width:100%;height:140px;object-fit:contain;background:#f1f5f9;border-radius:8px;margin-bottom:10px}
+.card-top{display:flex;align-items:center;gap:10px}.card-icon{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#eff6ff;color:#2563eb;font-size:18px}
+.card-title{color:#1e293b;font-size:14px;font-weight:600;word-break:break-word}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid #f1f5f9}
+.subject-badge{padding:3px 8px;border-radius:15px;background:#f1f5f9;color:#0d9488;font-size:11px;font-weight:600}
+.arrow-link{color:#2563eb;font-size:12px;font-weight:600}
+.pdf-link-btn{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:6px;background:#ef4444;color:#fff;text-decoration:none;font-size:11px;font-weight:600}
+.manage-list{margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1}
+.manage-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;font-size:13px}
+.del-sm-btn{padding:4px 8px;border:0;border-radius:4px;background:#ef4444;color:#fff;cursor:pointer;font-size:11px}
+.video-wrapper{display:none;position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden}
+iframe,video{width:100%;height:100%;border:0;object-fit:contain;transition:transform .2s;transform-origin:center}
+.touch-overlay{position:absolute;inset:0;z-index:10000;background:transparent}
+.auto-hide-ui{opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;z-index:10001}
+.auto-hide-ui.show{opacity:1;visibility:visible}
+
+/* Timer वीडियो के नीचे */
+.video-progress-box{
+position:absolute;
+left:12px;
+right:12px;
+bottom:82px;
+padding:8px 12px;
+background:#000d;
+border:1px solid #555;
+border-radius:8px;
+z-index:10003
+}
+.time-label{display:flex;justify-content:space-between;color:#fff;font-size:12px;margin-bottom:4px;text-shadow:0 1px 2px #000}
+#videoProgress{width:100%;height:7px;margin:0;padding:0;accent-color:#ef4444;cursor:pointer}
+
+/* बड़े buttons एक ही लाइन में */
+.player-controls{
+position:absolute;
+left:12px;
+right:12px;
+bottom:12px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:7px;
+width:calc(100% - 24px);
+padding:9px;
+border:1px solid #555;
+border-radius:9px;
+background:#000e;
+z-index:10002;
+overflow-x:auto;
+overflow-y:hidden;
+scrollbar-width:none
+}
+.player-controls::-webkit-scrollbar{display:none}
+.player-btn{
+flex:1 0 auto;
+min-width:78px;
+height:38px;
+padding:7px 12px;
+border:1px solid #777;
+border-radius:6px;
+background:#333;
+color:#fff;
+font-size:12px;
+font-weight:700;
+cursor:pointer;
+white-space:nowrap;
+box-shadow:0 1px 3px #000
+}
+.player-btn:active{background:#2563eb;transform:scale(.97)}
+.close-player-btn,.lock-btn{position:absolute;top:15px;padding:8px 12px;border:0;border-radius:6px;color:#fff;font-size:13px;font-weight:bold;cursor:pointer;z-index:10002}
+.close-player-btn{right:15px;background:#ef4444}.lock-btn{left:15px;background:#334155}
+.loading-text{grid-column:1/-1;padding:20px;text-align:center;color:#64748b;font-size:13px}
+
+@media(max-width:600px){
+.player-controls{left:8px;right:8px;bottom:8px;width:calc(100% - 16px);gap:5px;padding:7px}
+.player-btn{min-width:72px;height:36px;padding:6px 9px;font-size:11px}
+.video-progress-box{left:8px;right:8px;bottom:70px}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>🎓 EdTech Portal</h1>
+<div>
+<button class="tab-btn active" onclick="switchTab('studentTab',this)">Course View</button>
+<button class="tab-btn" onclick="requestAdminAccess(this)">🔒 Admin Panel</button>
+</div>
+</header>
+
+<div class="container">
+<section id="studentTab" class="section active">
+<div id="batchListView">
+<div class="hero-banner"><h2>नमस्ते विद्यार्थी! 👋</h2><p>अपनी तैयारी के लिए अपना पसंदीदा बैच चुनें।</p></div>
+<div class="search-container"><span class="search-icon">🔍</span><input id="searchBatchInput" class="search-input" onkeyup="filterBatches()" placeholder="अपना बैच या परीक्षा खोजें..."></div>
+<div class="section-header"><div class="section-title">उपलब्ध बैच (Batches)</div></div>
+<div class="grid-list" id="batchContainer"><p class="loading-text">डेटा लोड हो रहा है...</p></div>
+</div>
+<div id="subjectListView" style="display:none"><button onclick="backToBatches()">← वापस होम</button><h3 id="currentBatchTitle" style="color:#2563eb;margin:12px 0">विषय सूची</h3><div class="grid-list" id="subjectContainer"></div></div>
+<div id="videoListView" style="display:none"><button onclick="backToSubjects()">← वापस विषय सूची</button><h3 id="currentSubjectTitle" style="color:#0d9488;margin:12px 0">वीडियो लेक्चर्स</h3><div class="grid-list" id="videoContainer"></div></div>
+</section>
+
+<section id="adminTab" class="section">
+<div class="card"><h3>1. नया बैच बनाएं</h3><input id="batchNameInput" placeholder="बैच का नाम"><input id="batchImgInput" placeholder="बैच Image URL Optional"><button class="action-btn" onclick="createBatch()">बैच जोड़ें</button><div class="manage-list" id="manageBatchesList"></div></div>
+<div class="card"><h3>2. विषय जोड़ें</h3><select id="selectBatchForSubject" onchange="renderAdminSubjectList()"><option value="">बैच चुनें...</option></select><input id="subjectNameInput" placeholder="विषय का नाम"><button class="action-btn" style="background:#2563eb" onclick="addSubject()">विषय जोड़ें</button><div class="manage-list" id="manageSubjectsList"></div></div>
+<div class="card"><h3>3. वीडियो और PDF जोड़ें</h3><select id="selectBatchForVideo" onchange="loadSubjectsForVideoSelect()"><option value="">बैच चुनें...</option></select><select id="selectSubjectForVideo"><option value="">विषय चुनें...</option></select><input id="videoTitleInput" placeholder="वीडियो का शीर्षक"><input id="videoUrlInput" placeholder="YouTube Link या .m3u8 Link"><input id="pdfUrlInput" placeholder="PDF Link Optional"><button class="action-btn" style="background:#0d9488" onclick="addVideo()">वीडियो जोड़ें</button></div>
+</section>
+</div>
+
+<div class="video-wrapper" id="playerContainer">
+<div class="video-progress-box auto-hide-ui" id="progressBox">
+<div class="time-label"><span id="currentTimeLabel">00:00</span><span id="durationLabel">00:00</span></div>
+<input id="videoProgress" type="range" min="0" max="100" value="0" step=".1" onclick="event.stopPropagation()" oninput="seekFromProgress(this.value)">
+</div>
+<div class="touch-overlay" onclick="toggleControls()"></div>
+<button class="lock-btn auto-hide-ui" id="lockBtn" onclick="toggleLock(event)">🔓 Unlocked</button>
+<button class="close-player-btn auto-hide-ui" id="closeBtn" onclick="closePlayer(event)">✕ बंद करें</button>
+<div class="player-controls auto-hide-ui" id="playerControls">
+<button class="player-btn" id="playPauseBtn" onclick="toggleVideoPlayback(event)">⏸ रोकें</button>
+<button class="player-btn" onclick="skipVideo(-10,event)">⏪ 10 सेकंड पीछे</button>
+<button class="player-btn" onclick="skipVideo(10,event)">10 सेकंड आगे ⏩</button>
+<button class="player-btn" onclick="changeSpeed(event)">Speed: 1x</button>
+<button class="player-btn" onclick="adjustHorizontalZoom(-.05,event)">↔ Zoom −</button>
+<button class="player-btn" onclick="adjustHorizontalZoom(.05,event)">↔ Zoom +</button>
+<button class="player-btn" onclick="resetHorizontalZoom(event)">Zoom Reset</button>
+</div>
+<iframe id="videoPlayer" allowfullscreen allow="autoplay;encrypted-media" style="display:none"></iframe>
+<video id="hlsVideoPlayer" controls style="display:none"></video>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import{getDatabase,ref,set,onValue}from"https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+const config={
+apiKey:"AIzaSyAO-bncmaV5NSseKK7ViUiK3Tkr5ikDI4",
+authDomain:"my-batch-2026.firebaseapp.com",
+databaseURL:"https://my-batch-2026-default-rtdb.firebaseio.com",
+projectId:"my-batch-2026",
+storageBucket:"my-batch-2026.firebasestorage.app",
+messagingSenderId:"741326427624",
+appId:"1:741326427624:web:95414aa378b357d842805d"
+};
+
+const database=getDatabase(initializeApp(config)),dbRef=ref(database,"edtech_db");
+window.db=[];window.currentBatchIndex=null;window.currentSubjectIndex=null;
+window.horizontalScale=1;window.playbackSpeed=1;window.hideTimer=null;
+window.isLocked=false;window.adminPIN="1234";window.hlsPlayer=null;
+window.youtubePaused=false;window.youtubeDuration=0;window.youtubeCurrentTime=0;
+window.youtubeReady=false;
+
+onValue(dbRef,s=>{
+window.db=s.val()||[];
+document.querySelector(".section.active")?.id==="studentTab"
+?renderBatches()
+:(populateAdminDropdowns(),renderAdminBatchList(),renderAdminSubjectList());
+});
+window.saveData=()=>set(dbRef,window.db);
+</script>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=v=>String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+
+function requestAdminAccess(b){
+let p=prompt("एडमिन PIN दर्ज करें:");
+if(p===adminPIN)switchTab("adminTab",b);
+else if(p!==null)alert("गलत PIN!");
+}
+
+function switchTab(id,b){
+document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+$(id).classList.add("active");b.classList.add("active");
+id==="studentTab"?renderBatches():(populateAdminDropdowns(),renderAdminBatchList(),renderAdminSubjectList());
+}
+
+function createBatch(){
+let n=$("batchNameInput").value.trim(),i=$("batchImgInput").value.trim();
+if(!n)return alert("बैच का नाम दर्ज करें!");
+db.push({name:n,imageUrl:i,subjects:[]});
+$("batchNameInput").value=$("batchImgInput").value="";
+saveData();
+}
+
+function deleteBatch(i,e){
+e?.stopPropagation();
+if(confirm("बैच हटाएं?")){db.splice(i,1);saveData()}
+}
+
+function deleteSubject(b,s,e){
+e?.stopPropagation();
+if(confirm("विषय हटाएं?")){db[b].subjects.splice(s,1);saveData()}
+}
+
+function renderAdminBatchList(){
+let l=$("manageBatchesList");
+l.innerHTML=db.length
+?"<b>मौजूदा बैच:</b><br><br>"+db.map((b,i)=>`<div class="manage-item"><span>📁 ${esc(b.name)} (${b.subjects?.length||0} विषय)</span><button class="del-sm-btn" onclick="deleteBatch(${i},event)">Delete</button></div>`).join("")
+:"<p>कोई बैच उपलब्ध नहीं है।</p>";
+}
+
+function renderAdminSubjectList(){
+let i=$("selectBatchForSubject").value,l=$("manageSubjectsList");
+if(i===""||!db[i])return l.innerHTML="<p>विषय देखने के लिए बैच चुनें।</p>";
+let s=db[i].subjects||[];
+l.innerHTML=s.length
+?`<b>"${esc(db[i].name)}" के विषय:</b><br><br>`+s.map((x,j)=>`<div class="manage-item"><span>📘 ${esc(x.name)} (${x.videos?.length||0})</span><button class="del-sm-btn" onclick="deleteSubject(${i},${j},event)">Delete</button></div>`).join("")
+:"<p>इस बैच में कोई विषय नहीं है।</p>";
+}
+
+function populateAdminDropdowns(){
+let a=$("selectBatchForSubject"),v=$("selectBatchForVideo"),av=a.value,bv=v.value;
+let o='<option value="">बैच चुनें...</option>'+db.map((x,i)=>`<option value="${i}">${esc(x.name)}</option>`).join("");
+a.innerHTML=v.innerHTML=o;a.value=av;v.value=bv;loadSubjectsForVideoSelect();
+}
+
+function addSubject(){
+let b=$("selectBatchForSubject").value,n=$("subjectNameInput").value.trim();
+if(b===""||!n)return alert("बैच और विषय चुनें!");
+db[b].subjects||=[];db[b].subjects.push({name:n,videos:[]});
+$("subjectNameInput").value="";saveData();
+}
+
+function loadSubjectsForVideoSelect(){
+let b=$("selectBatchForVideo").value,s=$("selectSubjectForVideo");
+s.innerHTML='<option value="">विषय चुनें...</option>';
+if(b!==""&&db[b]?.subjects)s.innerHTML+=db[b].subjects.map((x,i)=>`<option value="${i}">${esc(x.name)}</option>`).join("");
+}
+
+function addVideo(){
+let b=$("selectBatchForVideo").value,s=$("selectSubjectForVideo").value;
+let t=$("videoTitleInput").value.trim(),u=$("videoUrlInput").value.trim(),p=$("pdfUrlInput").value.trim();
+if(b===""||s===""||!t||!u)return alert("वीडियो का पूरा विवरण भरें!");
+db[b].subjects[s].videos||=[];db[b].subjects[s].videos.push({title:t,url:u,pdfUrl:p});
+$("videoTitleInput").value=$("videoUrlInput").value=$("pdfUrlInput").value="";
+saveData();
+}
+
+function renderBatches(){
+let c=$("batchContainer");
+if(!db.length)return c.innerHTML="<p class='loading-text'>कोई बैच उपलब्ध नहीं है।</p>";
+c.innerHTML=db.map((b,i)=>`<div class="pro-batch-card" onclick="openSubjects(${i})">${b.imageUrl?`<img class="batch-banner-img" src="${esc(b.imageUrl)}">`:""}<div class="card-top"><div class="card-icon">🎓</div><div class="card-title">${esc(b.name)}</div></div><div class="card-footer"><span class="subject-badge">📚 ${b.subjects?.length||0} विषय</span><span class="arrow-link">एक्सप्लोर करें →</span></div></div>`).join("");
+showView("batchListView");
+}
+
+function filterBatches(){
+let q=$("searchBatchInput").value.toLowerCase();
+document.querySelectorAll("#batchContainer .pro-batch-card").forEach(x=>x.style.display=x.innerText.toLowerCase().includes(q)?"block":"none");
+}
+
+function openSubjects(i){
+currentBatchIndex=i;let b=db[i];
+$("currentBatchTitle").innerText=b.name+" > विषय सूची";
+$("subjectContainer").innerHTML=(b.subjects||[]).map((s,j)=>`<div class="pro-batch-card" onclick="openVideos(${j})"><div class="card-top"><div class="card-icon">📘</div><div class="card-title">${esc(s.name)}</div></div><div class="card-footer"><span class="subject-badge">▶ ${s.videos?.length||0} लेक्चर्स</span><span class="arrow-link">देखें →</span></div></div>`).join("")||"<p>कोई विषय नहीं है।</p>";
+showView("subjectListView");
+}
+
+function openVideos(i){
+currentSubjectIndex=i;let s=db[currentBatchIndex].subjects[i];
+$("currentSubjectTitle").innerText=s.name+" > वीडियो क्लास";
+$("videoContainer").innerHTML=(s.videos||[]).map(v=>`<div class="pro-batch-card"><div onclick="playVideo('${encodeURIComponent(v.url)}')"><div class="card-top"><div class="card-icon">▶</div><div class="card-title">${esc(v.title)}</div></div><div class="card-footer"><span class="subject-badge">प्ले करें</span><span class="arrow-link">स्टार्ट ▶</span></div></div>${v.pdfUrl?`<a class="pdf-link-btn" target="_blank" href="${esc(v.pdfUrl)}">📄 PDF नोट्स</a>`:""}</div>`).join("")||"<p>कोई वीडियो नहीं है।</p>";
+showView("videoListView");
+}
+
+function showView(id){["batchListView","subjectListView","videoListView"].forEach(x=>$(x).style.display=x===id?"block":"none")}
+function backToBatches(){renderBatches()}
+function backToSubjects(){openSubjects(currentBatchIndex)}
+
+function getYouTubeId(u){
+try{
+let x=new URL(u);
+if(x.hostname.includes("youtu.be"))return x.pathname.slice(1).split("/")[0];
+if(x.searchParams.get("v"))return x.searchParams.get("v");
+let p=x.pathname.split("/").filter(Boolean);
+return["embed","shorts","live","v"].includes(p[0])?p[1]:null;
+}catch(e){return null}
+}
+
+function yt(cmd,args=[]){
+let f=$("videoPlayer");
+if(!f.contentWindow)return;
+f.contentWindow.postMessage(JSON.stringify({
+event:"command",func:cmd,args:args,id:"edtech-player"
+}),"*");
+}
+
+function initializeYouTubePlayer(){
+let f=$("videoPlayer");
+if(!f.contentWindow)return;
+f.contentWindow.postMessage(JSON.stringify({event:"listening",id:"edtech-player",channel:"edtech-channel"}),"*");
+f.contentWindow.postMessage(JSON.stringify({event:"command",func:"addEventListener",args:["onStateChange"],id:"edtech-player"}),"*");
+yt("getDuration");yt("getCurrentTime");yt("getPlayerState");
+window.youtubeReady=true;
+}
+
+function fmt(t){
+if(!Number.isFinite(t)||t<0)t=0;
+let h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);
+return(h?String(h).padStart(2,"0")+":":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function updateProgress(c,d){
+if(d>0){
+$("videoProgress").value=Math.max(0,Math.min(100,c/d*100));
+$("durationLabel").innerText=fmt(d);
+}
+$("currentTimeLabel").innerText=fmt(c);
+}
+
+function seekFromProgress(n){
+let v=$("hlsVideoPlayer"),d=v.style.display!=="none"?v.duration:youtubeDuration;
+if(d>0){
+let t=d*Number(n)/100;
+if(v.style.display!=="none")v.currentTime=t;
+else{youtubeCurrentTime=t;yt("seekTo",[t,true])}
+updateProgress(t,d);
+}
+showControlsTemporarily();
+}
+
+async function playVideo(encoded){
+let u=decodeURIComponent(encoded),f=$("videoPlayer"),v=$("hlsVideoPlayer");
+$("playerContainer").style.display="block";
+try{await document.documentElement.requestFullscreen();await screen.orientation?.lock?.("landscape")}catch(e){}
+horizontalScale=1;playbackSpeed=1;youtubePaused=false;
+youtubeDuration=0;youtubeCurrentTime=0;youtubeReady=false;
+applyHorizontalZoom();updateProgress(0,0);updateSpeedButton();updatePlayPauseButton();
+
+if(u.toLowerCase().includes(".m3u8")){
+f.style.display="none";f.src="";v.style.display="block";
+if(Hls.isSupported()){hlsPlayer?.destroy();hlsPlayer=new Hls();hlsPlayer.loadSource(u);hlsPlayer.attachMedia(v);hlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>v.play())}
+else{v.src=u;v.play()}
+}else{
+hlsPlayer?.destroy();hlsPlayer=null;v.pause();v.src="";v.style.display="none";f.style.display="block";
+let id=getYouTubeId(u);
+f.onload=initializeYouTubePlayer;
+f.src=id?`https://www.youtube.com/embed/${id}?autoplay=1&controls=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`:u;
+setTimeout(initializeYouTubePlayer,1000);
+}
+showControlsTemporarily();
+}
+
+function toggleVideoPlayback(e){
+e.stopPropagation();let v=$("hlsVideoPlayer");
+if(v.style.display!=="none"){v.paused?v.play():v.pause()}
+else{youtubePaused?yt("playVideo"):yt("pauseVideo");youtubePaused=!youtubePaused}
+updatePlayPauseButton();showControlsTemporarily();
+}
+
+function updatePlayPauseButton(){
+let v=$("hlsVideoPlayer");
+$("playPauseBtn").innerText=(v.style.display!=="none"?v.paused:youtubePaused)?"▶ चलाएं":"⏸ रोकें";
+}
+
+function skipVideo(sec,e){
+e.stopPropagation();let v=$("hlsVideoPlayer");
+if(v.style.display!=="none"&&Number.isFinite(v.duration))v.currentTime=Math.max(0,Math.min(v.duration,v.currentTime+sec));
+else{let target=Math.max(0,Math.min(youtubeDuration,youtubeCurrentTime+sec));youtubeCurrentTime=target;yt("seekTo",[target,true]);updateProgress(target,youtubeDuration)}
+showControlsTemporarily();
+}
+
+function changeSpeed(e){
+e.stopPropagation();let a=[1,1.25,1.5,1.75,2,.75];
+playbackSpeed=a[(a.indexOf(playbackSpeed)+1)%a.length];
+let v=$("hlsVideoPlayer");
+v.style.display!=="none"?v.playbackRate=playbackSpeed:yt("setPlaybackRate",[playbackSpeed]);
+updateSpeedButton();showControlsTemporarily();
+}
+
+function updateSpeedButton(){
+let b=[...document.querySelectorAll(".player-btn")].find(x=>x.innerText.startsWith("Speed:"));
+if(b)b.innerText=`Speed: ${playbackSpeed}x`;
+}
+
+function applyHorizontalZoom(){
+$("videoPlayer").style.transform=$("hlsVideoPlayer").style.transform=`scaleX(${horizontalScale})`;
+}
+
+function adjustHorizontalZoom(n,e){
+e.stopPropagation();horizontalScale=Math.max(.5,Math.min(1.5,horizontalScale+n));
+applyHorizontalZoom();showControlsTemporarily();
+}
+
+function resetHorizontalZoom(e){
+e.stopPropagation();horizontalScale=1;applyHorizontalZoom();showControlsTemporarily();
+}
+
+function toggleControls(){
+if(isLocked)return;
+[...document.querySelectorAll(".auto-hide-ui")].some(x=>x.classList.contains("show"))?hideControlsNow():showControlsTemporarily();
+}
+
+function showControlsTemporarily(){
+document.querySelectorAll(".auto-hide-ui").forEach(x=>x.classList.add("show"));
+clearTimeout(hideTimer);hideTimer=setTimeout(hideControlsNow,3500);
+}
+
+function hideControlsNow(){
+document.querySelectorAll(".auto-hide-ui").forEach(x=>{
+if(!isLocked||x.id==="lockBtn")x.classList.remove("show");
+});
+}
+
+function toggleLock(e){
+e.stopPropagation();isLocked=!isLocked;let b=$("lockBtn");
+b.innerText=isLocked?"🔒 Locked":"🔓 Unlocked";
+b.style.background=isLocked?"#ef4444":"#334155";
+isLocked?(hideControlsNow(),b.classList.add("show")):showControlsTemporarily();
+}
+
+function closePlayer(e){
+e.stopPropagation();$("videoPlayer").src="";
+$("hlsVideoPlayer").pause();$("hlsVideoPlayer").src="";
+hlsPlayer?.destroy();hlsPlayer=null;
+$("playerContainer").style.display="none";isLocked=false;
+youtubePaused=false;youtubeReady=false;hideControlsNow();
+document.exitFullscreen?.().catch(()=>{});
+}
+
+$("hlsVideoPlayer").addEventListener("timeupdate",()=>{
+let v=$("hlsVideoPlayer");
+updateProgress(v.currentTime,v.duration);updatePlayPauseButton();
+});
+$("hlsVideoPlayer").addEventListener("play",updatePlayPauseButton);
+$("hlsVideoPlayer").addEventListener("pause",updatePlayPauseButton);
+
+setInterval(()=>{
+if($("videoPlayer").style.display!=="none"&&youtubeReady){
+yt("getCurrentTime");yt("getDuration");yt("getPlayerState");
+}
+},500);
+
+addEventListener("message",e=>{
+if(e.origin!=="https://www.youtube.com")return;
+try{
+let d=typeof e.data==="string"?JSON.parse(e.data):e.data;
+if(d.event==="onReady"){youtubeReady=true;yt("getDuration");yt("getCurrentTime")}
+if(d.event==="infoDelivery"&&d.info){
+if(Number.isFinite(d.info.currentTime))youtubeCurrentTime=d.info.currentTime;
+if(Number.isFinite(d.info.duration))youtubeDuration=d.info.duration;
+if(Number.isFinite(d.info.playerState))youtubePaused=d.info.playerState===2;
+updateProgress(youtubeCurrentTime,youtubeDuration);updatePlayPauseButton();
+}
+}catch(x){}
+});
+</script>
+</body>
+</html>
