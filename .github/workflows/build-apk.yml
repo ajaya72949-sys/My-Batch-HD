@@ -1,1 +1,79 @@
+name: Build Android APK
 
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Build Cordova APK
+      run: |
+        npm install -g cordova
+        cordova create app com.allbatches.app AllBatches
+        
+        # Files Copy
+        if [ -f "index.html" ]; then cp index.html app/www/index.html; fi
+        
+        # आपके लोगो फाइल को icon.png बनाना
+        if [ -f "Screenshot_20260815-163955.png" ]; then
+          cp Screenshot_20260815-163955.png app/www/icon.png
+        fi
+        
+        # 4 सेकंड वाली फोटो को splash.png बनाना
+        if [ -f "splash.png" ]; then
+          cp splash.png app/www/splash.png
+        fi
+        
+        # config.xml update
+        python3 -c '
+        with open("app/config.xml", "r") as f:
+            content = f.read()
+        
+        import re
+        content = re.sub(r"<name>.*?</name>", "<name>All Batches</name>", content)
+        
+        extra_config = """    <icon src="www/icon.png" />
+            <platform name="android">
+                <splash src="www/splash.png" density="port-hdpi"/>
+            </platform>
+            <preference name="SplashScreen" value="splash" />
+            <preference name="SplashScreenDelay" value="4000" />
+            <preference name="AutoHideSplashScreen" value="true" />
+            <preference name="FadeSplashScreen" value="true" />
+            <preference name="AndroidPostSplashScreenTheme" value="@style/Theme.AppCompat.NoActionBar" />
+        """
+        content = content.replace("</widget>", extra_config + "</widget>")
+        
+        with open("app/config.xml", "w") as f:
+            f.write(content)
+        '
+        
+        cd app
+        cordova platform add android
+        cordova plugin add cordova-plugin-splashscreen
+        
+        cordova build android --debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: AllBatches-APK
+        path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
